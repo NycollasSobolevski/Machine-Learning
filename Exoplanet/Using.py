@@ -1,0 +1,3 @@
+import Training
+
+Training.Fit()

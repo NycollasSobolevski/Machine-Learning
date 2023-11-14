@@ -13,7 +13,7 @@ import pandas as pd
 minNormalise = 0
 maxNormalise = 0
 
-def Normalise(matrix, minValue=0, maxValue=1):
+def NormaliseFit(matrix, minValue=0, maxValue=1):
     global maxNormalise, minNormalise
     maxNormalise = np.max(matrix)
     minNormalise = np.min(matrix)
@@ -27,11 +27,21 @@ def Normalise(matrix, minValue=0, maxValue=1):
     
     return XNorm
 
+def NormaliseInput(data, minValue=0, maxValue=1):
+    global maxNormalise, minNormalise
+
+    numerator = np.array([x - minNormalise for x in np.nditer(data, order='C')])
+    denominator = maxNormalise - minNormalise
+    multiplier = maxValue - minValue
+    
+    XNorm = (numerator / denominator) * multiplier + minValue
+    
+    return XNorm
 
 
 dataset = pd.read_csv("exoTrain.csv")
 data = dataset.iloc[:,1:]
-norm = Normalise(data, 0, 1)
+norm = NormaliseFit(data, 0, 1)
 lines = dataset[dataset.columns[0]].count()
 columns = len(data.columns)
 x = norm.reshape((lines , columns))
@@ -48,7 +58,7 @@ def Fit(x, y):
     model = make_pipeline(StandardScaler(), SVC(gamma='auto'))
     model.fit(X,y)
     print(accuracy_score( y_test , model.predict(X_test)))
+    dump(model, "ExoplanetModel.pkl")
 
 
 Fit(x, dataset['LABEL'])
-print(maxNormalise)
